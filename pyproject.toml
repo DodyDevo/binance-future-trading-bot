@@ -1,0 +1,45 @@
+[tool.poetry]
+name = "binance-future-trading-bot"
+version = "0.0.1"
+description = ""
+authors = ["Faris Fraeed Khaymi <farisfareed.k@gmail.com>"]
+readme = "README.md"
+packages = [{include = "app"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+
+
+[tool.poetry.group.dev.dependencies]
+black = "23.10.0"
+isort = "5.12.0"
+flake8 = "6.1.0"
+mypy = "1.6.1"
+pre-commit = "3.5.0"
+commitizen = "3.12.0"
+
+[tool.black]
+line-length = 88
+target-version = ['py311']
+
+[tool.mypy]
+python_version = 3.11
+warn_unused_configs = true
+
+[tool.isort]
+profile = "black"
+
+[tool.flake8]
+max-line-length = 88
+
+[tool.commitizen]
+name = "cz_conventional_commits"
+tag_format = "0.0.1"
+version_scheme = "semver"
+version_provider = "poetry"
+update_changelog_on_bump = true
+major_version_zero = false
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
