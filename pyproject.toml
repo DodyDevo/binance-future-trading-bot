@@ -8,6 +8,9 @@ packages = [{include = "app"}]
 
 [tool.poetry.dependencies]
 python = "^3.11"
+binance-futures-connector = "4.0.0"
+python-telegram-bot = "20.6"
+python-decouple = "3.8"
 
 
 [tool.poetry.group.dev.dependencies]
