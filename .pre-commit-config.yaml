@@ -1,8 +1,8 @@
 repos:
 - hooks:
   - args:
-    - --line-length
-    - '88'
+    - --config
+    - 'pyproject.toml'
     id: black
   repo: https://github.com/psf/black-pre-commit-mirror
   rev: 23.10.0
@@ -10,22 +10,22 @@ repos:
   - additional_dependencies:
     - mypy
     args:
-    - --python-version
-    - '3.11'
+    - --config-file 
+    - 'pyproject.toml'
     id: mypy
   repo: https://github.com/pre-commit/mirrors-mypy/
   rev: v1.6.1
 - hooks:
   - args:
-    - --profile
-    - black
+    - --settings-path
+    - 'pyproject.toml'
     id: isort
   repo: https://github.com/PyCQA/isort
   rev: 5.12.0
 - hooks:
   - args:
-    - --max-line-length
-    - '88'
+    - --config
+    - '.flake8'
     id: flake8
   repo: https://github.com/PyCQA/flake8
   rev: 6.1.0
