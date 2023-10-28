@@ -20,12 +20,4 @@ async def process_message(update: Update, _: ContextTypes.DEFAULT_TYPE) -> None:
         logger.debug(f"Message is not valid: {update.message.text}")
         return
 
-    await update.message.reply_text(
-        f"Is valid: {parser.is_valid}"
-        f"\nMessage type: {parser.message_type}"
-        f"\nSymbol: {parser.symbol}"
-        f"\nSide: {parser.side}"
-        f"\nEntry: {parser.entry}"
-        f"\nTarget: {parser.target}"
-        f"\nStop: {parser.stop}"
-    )
+    await update.message.reply_text(parser.json())

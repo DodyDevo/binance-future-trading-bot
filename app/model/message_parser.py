@@ -1,4 +1,6 @@
+import json
 from enum import StrEnum
+from datetime import datetime
 
 from service import setting as Setting
 
@@ -82,3 +84,18 @@ class MessageParser:
             ]
         )
         self._stop = float(message_lines[9][message_lines[9].index(":") + 2 :])
+        self._time = datetime.now()
+
+    def json(self) -> str:
+        return json.dumps(
+            {
+                "symbol": self.symbol,
+                "side": self.side,
+                "entry": self.entry,
+                "target": self.target,
+                "stop": self.stop,
+                "time": self._time,
+            },
+            indent=4,
+            default=str,
+        )
