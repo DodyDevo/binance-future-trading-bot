@@ -24,4 +24,5 @@ async def process_message(update: Update, _: ContextTypes.DEFAULT_TYPE) -> None:
         f"Is valid: {parser.is_valid}"
         f"\nMessage type: {parser.message_type}"
         f"\nSymbol: {parser.symbol}"
+        f"\nSide: {parser.side}"
     )
