@@ -47,6 +47,10 @@ class MessageParser:
     def target(self) -> float:
         return self._target
 
+    @property
+    def stop(self) -> float:
+        return self._stop
+
     def _get_message_type(self) -> None:
         if self._message.find("Get Ready") >= 0:
             self._message_type = MessageType.GET_READY
@@ -77,3 +81,4 @@ class MessageParser:
                 message_lines[Setting.TARGET + 2].index(":") + 2 :
             ]
         )
+        self._stop = float(message_lines[9][message_lines[9].index(":") + 2 :])

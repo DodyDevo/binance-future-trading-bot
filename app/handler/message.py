@@ -27,4 +27,5 @@ async def process_message(update: Update, _: ContextTypes.DEFAULT_TYPE) -> None:
         f"\nSide: {parser.side}"
         f"\nEntry: {parser.entry}"
         f"\nTarget: {parser.target}"
+        f"\nStop: {parser.stop}"
     )
