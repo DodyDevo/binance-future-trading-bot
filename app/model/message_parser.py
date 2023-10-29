@@ -45,13 +45,25 @@ class MessageParser:
     def entry(self) -> float:
         return self._entry
 
+    @entry.setter
+    def entry(self, value: float) -> None:
+        self._entry = value
+
     @property
     def target(self) -> float:
         return self._target
 
+    @target.setter
+    def target(self, value: float) -> None:
+        self._target = value
+
     @property
     def stop(self) -> float:
         return self._stop
+
+    @stop.setter
+    def stop(self, value: float) -> None:
+        self._stop = value
 
     def _get_message_type(self) -> None:
         if self._message.find("Get Ready") >= 0:
