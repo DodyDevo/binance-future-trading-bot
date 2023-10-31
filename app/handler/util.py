@@ -92,3 +92,43 @@ async def set_margin_type(margin_type: str, symbol: str) -> None:
                 error.status_code, error.error_code, error.error_message
             )
         )
+
+
+async def check_balance() -> float:
+    try:
+        assets = api_client.balance()
+        for asset in assets:
+            if asset["asset"] == "USDT":
+                return float(asset["availableBalance"])
+        return -1
+    except ClientError as error:
+        log.error(
+            "Found error. status: {}, error code: {}, error message: {}".format(
+                error.status_code, error.error_code, error.error_message
+            )
+        )
+        return -1
+
+
+def create_order(param: list[dict]) -> dict:
+    try:
+        response = api_client.new_batch_order(param)
+        return response
+    except ClientError as error:
+        log.error(
+            "Found error. status: {}, error code: {}, error message: {}".format(
+                error.status_code, error.error_code, error.error_message
+            )
+        )
+        return {}
+
+
+async def auto_cancel_order(symbol: str, milliseconds: int = 14400000) -> None:
+    try:
+        api_client.countdown_cancel_order(symbol=symbol, countdownTime=milliseconds)
+    except ClientError as error:
+        log.error(
+            "Found error. status: {}, error code: {}, error message: {}".format(
+                error.status_code, error.error_code, error.error_message
+            )
+        )

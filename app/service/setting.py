@@ -12,7 +12,7 @@ class Setting(BaseSettings):
     BINANCE_TIMEOUT: int = Field(10000, ge=5000)
 
     TARGET: int = Field(3, ge=1, le=6)
-    TRADE_AMOUNT: float = Field(1, gt=0)
+    TRADE_AMOUNT: float = Field(1000, gt=0)
     LEVERAGE: int = Field(10, ge=1, le=125)
 
     class Config:

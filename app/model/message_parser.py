@@ -1,5 +1,4 @@
 from enum import StrEnum
-from datetime import datetime
 
 from service import setting as Setting
 
@@ -23,6 +22,8 @@ class MessageParser:
 
         if self._message_type == MessageType.GET_READY:
             self._parse_ready()
+        elif self._message_type == MessageType.OPENED:
+            self._parse_open()
 
     @property
     def is_valid(self) -> bool:
@@ -95,4 +96,9 @@ class MessageParser:
             ]
         )
         self._stop = float(message_lines[9][message_lines[9].index(":") + 2 :])
-        self._time = datetime.now()
+
+    def _parse_open(self) -> None:
+        message_lines = list(filter(None, self._message.split("\n")))
+        self._symbol = message_lines[0][
+            message_lines[0].index("#") + 1 : message_lines[0].index(".P")
+        ]
