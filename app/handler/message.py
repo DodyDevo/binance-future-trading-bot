@@ -102,7 +102,9 @@ async def process_opened(parser: MessageParser) -> dict | None:
     return order_created
 
 
-async def process_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def process_telegram_message(
+    update: Update, context: ContextTypes.DEFAULT_TYPE
+) -> None:
     current_user = update.effective_user
 
     if await is_user_not_authorized(current_user.id):

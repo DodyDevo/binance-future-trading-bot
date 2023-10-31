@@ -7,6 +7,7 @@ class Setting(BaseSettings):
     TELEGRAM_OWNER_ID: int
 
     BINANCE_BASE_URL: str
+    BINANCE_WS_BASE_URL: str
     BINANCE_API_KEY: str
     BINANCE_API_SECRET: str
     BINANCE_TIMEOUT: int = Field(10000, ge=5000)

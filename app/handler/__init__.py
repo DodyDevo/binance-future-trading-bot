@@ -1,4 +1,4 @@
-from .message import process_message
+from .message import process_telegram_message
 from .util import (
     truncate,
     allowable,
@@ -13,7 +13,7 @@ from .util import (
 
 __all__ = [
     "is_user_not_authorized",
-    "process_message",
+    "process_telegram_message",
     "get_symbol_info",
     "truncate",
     "set_margin_type",
