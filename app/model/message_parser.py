@@ -1,4 +1,3 @@
-import json
 from enum import StrEnum
 from datetime import datetime
 
@@ -23,7 +22,7 @@ class MessageParser:
         self._get_message_type()
 
         if self._message_type == MessageType.GET_READY:
-            self._parse()
+            self._parse_ready()
 
     @property
     def is_valid(self) -> bool:
@@ -76,7 +75,7 @@ class MessageParser:
             self._message_type = MessageType.OTHER
             self._is_valid = False
 
-    def _parse(self) -> None:
+    def _parse_ready(self) -> None:
         message_lines = list(filter(None, self._message.split("\n")))
         self._symbol = message_lines[0][
             message_lines[0].index("#") + 1 : message_lines[0].index(".P")
@@ -97,17 +96,3 @@ class MessageParser:
         )
         self._stop = float(message_lines[9][message_lines[9].index(":") + 2 :])
         self._time = datetime.now()
-
-    def json(self) -> str:
-        return json.dumps(
-            {
-                "symbol": self.symbol,
-                "side": self.side,
-                "entry": self.entry,
-                "target": self.target,
-                "stop": self.stop,
-                "time": self._time,
-            },
-            indent=4,
-            default=str,
-        )
