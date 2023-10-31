@@ -123,7 +123,7 @@ def create_order(param: list[dict]) -> dict:
         return {}
 
 
-async def auto_cancel_order(symbol: str, milliseconds: int = 14400000) -> None:
+def auto_cancel_order(symbol: str, milliseconds: int = 14400000) -> None:
     try:
         api_client.countdown_cancel_order(symbol=symbol, countdownTime=milliseconds)
     except ClientError as error:

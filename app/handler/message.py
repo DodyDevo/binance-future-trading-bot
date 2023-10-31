@@ -97,7 +97,7 @@ async def process_opened(parser: MessageParser) -> dict | None:
     ]
 
     order_created = create_order(param)
-    await auto_cancel_order(parser.symbol)
+    auto_cancel_order(parser.symbol)
 
     return order_created
 
