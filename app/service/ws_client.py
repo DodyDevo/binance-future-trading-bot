@@ -1,7 +1,9 @@
 import json
+import asyncio
 from time import sleep
 from datetime import datetime
 
+from telegram import Bot
 from handler import create_order, auto_cancel_order
 from binance.websocket.binance_socket_manager import BinanceSocketManager
 from binance.websocket.um_futures.websocket_client import UMFuturesWebsocketClient
@@ -13,6 +15,7 @@ from .setting import setting as Setting
 log = get_logger(__name__)
 
 listen_key = ""
+bot = Bot(token=Setting.TELEGRAM_TOKEN)
 
 
 def message_handler(_: BinanceSocketManager, message: dict) -> None:
@@ -28,40 +31,71 @@ def message_handler(_: BinanceSocketManager, message: dict) -> None:
 
             symbol = message_order["s"]
 
-            if (
-                database[symbol]["target"] == message_order["sp"]
-                or database[symbol]["stop"] == message_order["sp"]
-            ):
-                auto_cancel_order(symbol=symbol, milliseconds=2000)
-                log.info("TP/SP cancel")
-                return None
+            if message_order["o"] == "TAKE_PROFIT_MARKET":
+                auto_cancel_order(symbol=symbol, milliseconds=5000)
+                asyncio.run(
+                    bot.send_message(
+                        chat_id=Setting.TELEGRAM_CHAT_ID,
+                        text=f"Take profit order filled for #{symbol}",
+                    )
+                )
+            elif message_order["o"] == "STOP_MARKET":
+                auto_cancel_order(symbol=symbol, milliseconds=5000)
+                asyncio.run(
+                    bot.send_message(
+                        chat_id=Setting.TELEGRAM_CHAT_ID,
+                        text=f"Stop loss order filled for #{symbol}",
+                    )
+                )
+            elif message_order["o"] == "MARKET":
+                api_client.cancel_open_orders(symbol=symbol)
+                side = "SELL" if database[symbol]["side"] == "BUY" else "BUY"
+                param = [
+                    {
+                        "symbol": symbol,
+                        "side": side,
+                        "type": "TAKE_PROFIT_MARKET",
+                        "stopPrice": str(database[symbol]["target"]),
+                        "closePosition": "true",
+                        "workingType": "MARK_PRICE",
+                        "recvWindow": str(Setting.BINANCE_TIMEOUT),
+                    },
+                    {
+                        "symbol": symbol,
+                        "side": side,
+                        "type": "STOP_MARKET",
+                        "stopPrice": str(database[symbol]["stop"]),
+                        "closePosition": "true",
+                        "workingType": "MARK_PRICE",
+                        "recvWindow": str(Setting.BINANCE_TIMEOUT),
+                    },
+                ]
 
-            side = "SELL" if database[symbol]["side"] == "BUY" else "BUY"
-            param = [
-                {
-                    "symbol": symbol,
-                    "side": side,
-                    "type": "TAKE_PROFIT_MARKET",
-                    "stopPrice": str(database[symbol]["target"]),
-                    "closePosition": "true",
-                    "workingType": "MARK_PRICE",
-                    "recvWindow": str(Setting.BINANCE_TIMEOUT),
-                },
-                {
-                    "symbol": symbol,
-                    "side": side,
-                    "type": "STOP_MARKET",
-                    "stopPrice": str(database[symbol]["stop"]),
-                    "closePosition": "true",
-                    "workingType": "MARK_PRICE",
-                    "recvWindow": "10000",
-                },
-            ]
+                orders = create_order(param)
+                auto_cancel_order(symbol=symbol, milliseconds=432000000)
 
-            log.info(f"TP/SP order to be send: {param}")
-            create_order(param)
-            auto_cancel_order(symbol=symbol, milliseconds=432000000)
-            log.info("TP/SP hit")
+                is_take_profit_success = orders[0].get("code", None)
+                is_stop_loss_success = orders[1].get("code", None)
+
+                if is_take_profit_success is None and is_stop_loss_success is None:
+                    asyncio.run(
+                        bot.send_message(
+                            chat_id=Setting.TELEGRAM_CHAT_ID,
+                            text=f"TP/SP order created for #{symbol}",
+                        )
+                    )
+                else:
+                    asyncio.run(
+                        bot.send_message(
+                            chat_id=Setting.TELEGRAM_CHAT_ID,
+                            text=f"TP/SP order fail for {symbol}"
+                            f"\ndetails: {json.dumps(orders, indent=4)}",
+                        )
+                    )
+
+            else:
+                log.debug(f"Message received: {message}")
+
     else:
         log.debug(f"Message received: {message}")
 
@@ -93,4 +127,4 @@ def renew_key() -> None:
     while True:
         api_client.renew_listen_key(listen_key)
         log.debug(f"Listen key renewed for {listen_key}")
-        sleep(55)
+        sleep(3950)

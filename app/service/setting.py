@@ -5,6 +5,7 @@ from pydantic_settings import BaseSettings
 class Setting(BaseSettings):
     TELEGRAM_TOKEN: str
     TELEGRAM_OWNER_ID: int
+    TELEGRAM_CHAT_ID: int
 
     BINANCE_BASE_URL: str
     BINANCE_WS_BASE_URL: str

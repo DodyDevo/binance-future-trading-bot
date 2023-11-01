@@ -121,7 +121,6 @@ async def process_telegram_message(
     elif parser.message_type == MessageType.OPENED:
         order = await process_opened(parser)
         if order:
-            await context.bot.send_message(
-                chat_id=update.effective_chat.id,
-                text=json.dumps(order, indent=4),
+            await update.message.reply_text(
+                text=f"SYMBOL: #{order[0]['symbol']}" f"\nSIDE: {order[0]['side']}",
             )
