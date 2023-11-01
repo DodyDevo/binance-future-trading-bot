@@ -15,7 +15,6 @@ from .util import (
     get_symbol_info,
     set_margin_type,
     auto_cancel_order,
-    is_user_not_authorized,
 )
 
 log = get_logger(__name__)
@@ -103,13 +102,8 @@ async def process_opened(parser: MessageParser) -> dict | None:
 
 
 async def process_telegram_message(
-    update: Update, context: ContextTypes.DEFAULT_TYPE
+    update: Update, _: ContextTypes.DEFAULT_TYPE
 ) -> None:
-    current_user = update.effective_user
-
-    if await is_user_not_authorized(current_user.id):
-        return
-
     parser = MessageParser(update.message.text)
 
     if not parser.is_valid:
