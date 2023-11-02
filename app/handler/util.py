@@ -125,3 +125,14 @@ def auto_cancel_order(symbol: str, milliseconds: int = 14400000) -> None:
                 error.status_code, error.error_code, error.error_message
             )
         )
+
+
+async def cancel_orders(symbol: str) -> None:
+    try:
+        api_client.cancel_open_orders(symbol=symbol)
+    except ClientError as error:
+        log.error(
+            "Found error. status: {}, error code: {}, error message: {}".format(
+                error.status_code, error.error_code, error.error_message
+            )
+        )

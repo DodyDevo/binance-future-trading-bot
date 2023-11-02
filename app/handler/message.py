@@ -1,5 +1,5 @@
 import json
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from telegram import Update
 from service import get_logger
@@ -11,6 +11,7 @@ from .util import (
     truncate,
     allowable,
     create_order,
+    cancel_orders,
     check_balance,
     get_symbol_info,
     set_margin_type,
@@ -20,14 +21,14 @@ from .util import (
 log = get_logger(__name__)
 
 
-async def process_get_ready(parser: MessageParser) -> None:
+async def process_get_ready(parser: MessageParser) -> dict:
     symbol_info = await get_symbol_info(parser.symbol)
 
     price_precision = symbol_info.get("pricePrecision", None)
 
     if not price_precision:
         log.error(f"Price precision not found for symbol: {parser.symbol}")
-        return
+        return {}
 
     parser.entry = await truncate(parser.entry, price_precision)
     parser.target = await truncate(parser.target, price_precision)
@@ -36,7 +37,36 @@ async def process_get_ready(parser: MessageParser) -> None:
     quantity, leverage = await allowable(parser.symbol, parser.entry)
     quantity = await truncate(quantity, symbol_info.get("quantityPrecision", None))
 
+    balance = await check_balance()
+
+    if balance < Setting.TRADE_AMOUNT:
+        log.error(
+            f"Stop trading balance is less than {Setting.TRADE_AMOUNT}, "
+            "current balance {balance}"
+        )
+        return {}
+
+    await cancel_orders(parser.symbol)
+
+    await set_margin_type(margin_type="CROSSED", symbol=parser.symbol)
+
+    param = [
+        {
+            "symbol": parser.symbol,
+            "side": parser.side,
+            "type": "STOP_MARKET",
+            "stopPrice": str(parser.entry),
+            "closePosition": "true",
+            "workingType": "MARK_PRICE",
+            "recvWindow": str(Setting.BINANCE_TIMEOUT),
+        },
+    ]
+
+    orders = create_order(param)
+    auto_cancel_order(parser.symbol)
+
     order_data = {
+        "order_id": orders[0]["orderId"],
         "entry": parser.entry,
         "target": parser.target,
         "stop": parser.stop,
@@ -55,50 +85,7 @@ async def process_get_ready(parser: MessageParser) -> None:
 
     log.debug(f"Order data saved: {order_data}")
 
-
-async def process_opened(parser: MessageParser) -> dict | None:
-    balance = await check_balance()
-
-    if balance < Setting.TRADE_AMOUNT:
-        log.error(
-            f"Stop trading balance is less than {Setting.TRADE_AMOUNT}, "
-            "current balance {balance}"
-        )
-        return None
-
-    with open("database.json", "r") as file:
-        data = json.load(file)
-
-    order_data = data.get(parser.symbol, None)
-
-    if not order_data:
-        log.error(f"Order data not found for symbol: {parser.symbol}")
-        return None
-
-    now = int(datetime.now().timestamp())
-    diffrence = now - order_data["timestamp"]
-
-    if diffrence > timedelta(hours=4).total_seconds():
-        log.error(f"Order data is expired for symbol: {parser.symbol}")
-        return None
-
-    await set_margin_type(margin_type="CROSSED", symbol=parser.symbol)
-
-    param = [
-        {
-            "symbol": parser.symbol,
-            "side": order_data["side"],
-            "type": "MARKET",
-            "quantity": str(order_data["quantity"]),
-            "workingType": "MARK_PRICE",
-            "recvWindow": str(Setting.BINANCE_TIMEOUT),
-        },
-    ]
-
-    order_created = create_order(param)
-    auto_cancel_order(parser.symbol)
-
-    return order_created
+    return orders
 
 
 async def process_telegram_message(
@@ -111,10 +98,15 @@ async def process_telegram_message(
         return
 
     if parser.message_type == MessageType.GET_READY:
-        await process_get_ready(parser)
-    elif parser.message_type == MessageType.OPENED:
-        order = await process_opened(parser)
-        if order:
+        orders = await process_get_ready(parser)
+
+        if orders and orders[0].get("code", None) is None:
             await update.message.reply_text(
-                text=f"SYMBOL: #{order[0]['symbol']}" f"\nSIDE: {order[0]['side']}",
+                f"Order created for {orders[0]['symbol']}, "
+                f"with entry {orders[0]['stopPrice']}"
+            )
+        else:
+            await update.message.reply_text(
+                f"Order fail for {orders[0]['symbol']}"
+                f"\ndetails: {json.dumps(orders, indent=4)}"
             )

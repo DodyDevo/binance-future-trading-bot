@@ -4,6 +4,7 @@ from .util import (
     truncate,
     allowable,
     create_order,
+    cancel_orders,
     check_balance,
     get_max_value,
     get_symbol_info,
@@ -25,4 +26,5 @@ __all__ = [
     "set_leverage",
     "set_trade",
     "set_target",
+    "cancel_orders",
 ]

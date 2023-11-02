@@ -22,9 +22,10 @@ listen_key = ""
 def message_handler(_: BinanceSocketManager, message: dict) -> None:
     if isinstance(message, str):  # type: ignore
         message = json.loads(message)  # type: ignore
-    event: str = message.get("e", None)
+
+    event = message.get("e", None)
+
     if event == "ORDER_TRADE_UPDATE":
-        log.info("Event received: ORDER_TRADE_UPDATE")
         message_order = message["o"]
         if message_order["X"] == "FILLED":
             with open("database.json", "r") as file:
@@ -36,25 +37,9 @@ def message_handler(_: BinanceSocketManager, message: dict) -> None:
             )
 
             symbol = message_order["s"]
+            order_id = message_order["i"]
 
-            if message_order["o"] == "TAKE_PROFIT_MARKET":
-                auto_cancel_order(symbol=symbol, milliseconds=5000)
-                asyncio.run(
-                    bot.send_message(
-                        chat_id=Setting.TELEGRAM_CHAT_ID,
-                        text=f"Take profit order filled for #{symbol}",
-                    )
-                )
-            elif message_order["o"] == "STOP_MARKET":
-                auto_cancel_order(symbol=symbol, milliseconds=5000)
-                asyncio.run(
-                    bot.send_message(
-                        chat_id=Setting.TELEGRAM_CHAT_ID,
-                        text=f"Stop loss order filled for #{symbol}",
-                    )
-                )
-            elif message_order["o"] == "MARKET":
-                api_client.cancel_open_orders(symbol=symbol)
+            if order_id == database[symbol]["order_id"]:
                 side = "SELL" if database[symbol]["side"] == "BUY" else "BUY"
                 param = [
                     {
@@ -78,7 +63,6 @@ def message_handler(_: BinanceSocketManager, message: dict) -> None:
                 ]
 
                 orders = create_order(param)
-                auto_cancel_order(symbol=symbol, milliseconds=432000000)
 
                 is_take_profit_success = orders[0].get("code", None)
                 is_stop_loss_success = orders[1].get("code", None)
@@ -94,13 +78,29 @@ def message_handler(_: BinanceSocketManager, message: dict) -> None:
                     asyncio.run(
                         bot.send_message(
                             chat_id=Setting.TELEGRAM_CHAT_ID,
-                            text=f"TP/SP order fail for {symbol}"
+                            text=f"TP/SL order fail for {symbol}"
                             f"\ndetails: {json.dumps(orders, indent=4)}",
                         )
                     )
-            else:
-                log.debug(f"Message received: {message}")
 
+            elif message_order["o"] == "TAKE_PROFIT_MARKET":
+                auto_cancel_order(symbol=symbol, milliseconds=5000)
+                asyncio.run(
+                    bot.send_message(
+                        chat_id=Setting.TELEGRAM_CHAT_ID,
+                        text=f"Take profit order filled for #{symbol}",
+                    )
+                )
+            elif message_order["o"] == "STOP_MARKET":
+                auto_cancel_order(symbol=symbol, milliseconds=5000)
+                asyncio.run(
+                    bot.send_message(
+                        chat_id=Setting.TELEGRAM_CHAT_ID,
+                        text=f"Stop loss order filled for #{symbol}",
+                    )
+                )
+            else:
+                log.debug(f"Unrecognized order message: {message_order}")
     else:
         log.debug(f"Message received: {message}")
 
