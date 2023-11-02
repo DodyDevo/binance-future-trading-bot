@@ -5,6 +5,7 @@ from datetime import datetime
 
 from telegram import Bot
 from binance.error import ClientError
+from telegram.request import HTTPXRequest
 from handler import create_order, auto_cancel_order
 from binance.websocket.binance_socket_manager import BinanceSocketManager
 from binance.websocket.um_futures.websocket_client import UMFuturesWebsocketClient
@@ -16,7 +17,6 @@ from .setting import setting as Setting
 log = get_logger(__name__)
 
 listen_key = ""
-bot = Bot(token=Setting.TELEGRAM_TOKEN)
 
 
 def message_handler(_: BinanceSocketManager, message: dict) -> None:
@@ -29,6 +29,11 @@ def message_handler(_: BinanceSocketManager, message: dict) -> None:
         if message_order["X"] == "FILLED":
             with open("database.json", "r") as file:
                 database = json.load(file)
+
+            bot = Bot(
+                token=Setting.TELEGRAM_TOKEN,
+                request=HTTPXRequest(connection_pool_size=8),
+            )
 
             symbol = message_order["s"]
 
@@ -82,7 +87,7 @@ def message_handler(_: BinanceSocketManager, message: dict) -> None:
                     asyncio.run(
                         bot.send_message(
                             chat_id=Setting.TELEGRAM_CHAT_ID,
-                            text=f"TP/SP order created for #{symbol}",
+                            text=f"TP/SL order created for #{symbol}",
                         )
                     )
                 else:
@@ -93,7 +98,6 @@ def message_handler(_: BinanceSocketManager, message: dict) -> None:
                             f"\ndetails: {json.dumps(orders, indent=4)}",
                         )
                     )
-
             else:
                 log.debug(f"Message received: {message}")
 
