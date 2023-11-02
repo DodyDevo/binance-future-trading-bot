@@ -63,6 +63,10 @@ async def process_get_ready(parser: MessageParser) -> dict:
     ]
 
     orders = create_order(param)
+
+    if orders[0].get("code", None) is not None:
+        return orders
+
     auto_cancel_order(parser.symbol)
 
     order_data = {
