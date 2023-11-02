@@ -4,6 +4,7 @@ from time import sleep
 from datetime import datetime
 
 from telegram import Bot
+from binance.error import ClientError
 from handler import create_order, auto_cancel_order
 from binance.websocket.binance_socket_manager import BinanceSocketManager
 from binance.websocket.um_futures.websocket_client import UMFuturesWebsocketClient
@@ -124,7 +125,21 @@ def renew_session() -> None:
 
 
 def renew_key() -> None:
+    global listen_key
     while True:
-        api_client.renew_listen_key(listen_key)
-        log.debug(f"Listen key renewed for {listen_key}")
-        sleep(3950)
+        try:
+            api_client.renew_listen_key(listen_key)
+            log.debug(f"Listen key renewed for {listen_key}")
+            sleep(3300)
+        except ClientError as error:
+            log.error(
+                f"Found error. status: {error.status_code}"
+                f"\nError code: {error.error_code}"
+                f"\nError message: {error.error_message}"
+            )
+            listen_key = api_client.new_listen_key()["listenKey"]
+            ws_client.user_data(
+                listen_key=listen_key,
+                id=int(datetime.now().timestamp()),
+            )
+            sleep(3300)
