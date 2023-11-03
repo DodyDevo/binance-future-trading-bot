@@ -45,9 +45,9 @@ def message_handler(_: BinanceSocketManager, message: dict) -> None:
                     {
                         "symbol": symbol,
                         "side": side,
-                        "type": "TAKE_PROFIT_MARKET",
-                        "stopPrice": str(database[symbol]["target"]),
-                        "closePosition": "true",
+                        "type": "TRAILING_STOP_MARKET",
+                        "activationPrice": str(database[symbol]["target"]),
+                        "callbackRate": "0.5",
                         "workingType": "MARK_PRICE",
                         "recvWindow": str(Setting.BINANCE_TIMEOUT),
                     },
@@ -83,7 +83,7 @@ def message_handler(_: BinanceSocketManager, message: dict) -> None:
                         )
                     )
 
-            elif message_order["o"] == "TAKE_PROFIT_MARKET":
+            elif message_order["o"] == "TRAILING_STOP_MARKET":
                 auto_cancel_order(symbol=symbol, milliseconds=5000)
                 asyncio.run(
                     bot.send_message(

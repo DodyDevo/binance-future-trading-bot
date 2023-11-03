@@ -13,7 +13,7 @@ class Setting(BaseSettings):
     BINANCE_API_SECRET: str
     BINANCE_TIMEOUT: int = Field(10000, ge=5000)
 
-    TARGET: int = Field(3, ge=1, le=6)
+    TARGET: int = Field(2, ge=1, le=6)
     TRADE_AMOUNT: float = Field(2, gt=0)
     LEVERAGE: int = Field(10, ge=1, le=125)
 
