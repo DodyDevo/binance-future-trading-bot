@@ -53,7 +53,7 @@ async def process_get_ready(parser: MessageParser) -> dict:
     param = [
         {
             "symbol": parser.symbol,
-            "side": parser.side,
+            "side": parser.side.value,
             "type": "STOP_MARKET",
             "stopPrice": str(parser.entry),
             "closePosition": "true",
