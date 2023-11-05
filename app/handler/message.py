@@ -15,7 +15,6 @@ from .util import (
     check_balance,
     get_symbol_info,
     set_margin_type,
-    auto_cancel_order,
 )
 
 log = get_logger(__name__)
@@ -67,7 +66,9 @@ async def process_get_ready(parser: MessageParser) -> dict:
     if orders[0].get("code", None) is not None:
         return orders
 
-    auto_cancel_order(parser.symbol)
+    log.debug(f"Orders created: {orders}")
+
+    # auto_cancel_order(parser.symbol)
 
     order_data = {
         "order_id": orders[0]["orderId"],

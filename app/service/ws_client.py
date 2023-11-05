@@ -100,7 +100,9 @@ def message_handler(_: BinanceSocketManager, message: dict) -> None:
                     )
                 )
             else:
-                log.debug(f"Unrecognized order message: {message_order}")
+                log.debug(f"Unrecognize order message: {message_order}")
+        else:
+            log.debug(f"Not filled order message: {message_order}")
     else:
         log.debug(f"Message received: {message}")
 
