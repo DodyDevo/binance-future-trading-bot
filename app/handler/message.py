@@ -55,7 +55,8 @@ async def process_get_ready(parser: MessageParser) -> dict:
             "side": parser.side.value,
             "type": "STOP_MARKET",
             "stopPrice": str(parser.entry),
-            "closePosition": "true",
+            "quantity": str(quantity),
+            "closePosition": "false",
             "workingType": "MARK_PRICE",
             "recvWindow": str(Setting.BINANCE_TIMEOUT),
         },
@@ -68,7 +69,7 @@ async def process_get_ready(parser: MessageParser) -> dict:
 
     log.debug(f"Orders created: {orders}")
 
-    # auto_cancel_order(parser.symbol)
+    auto_cancel_order(parser.symbol)
 
     order_data = {
         "order_id": orders[0]["orderId"],

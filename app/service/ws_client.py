@@ -84,7 +84,6 @@ def message_handler(_: BinanceSocketManager, message: dict) -> None:
                     )
 
             elif message_order["o"] == "TRAILING_STOP_MARKET":
-                auto_cancel_order(symbol=symbol, milliseconds=5000)
                 asyncio.run(
                     bot.send_message(
                         chat_id=Setting.TELEGRAM_CHAT_ID,
@@ -92,7 +91,6 @@ def message_handler(_: BinanceSocketManager, message: dict) -> None:
                     )
                 )
             elif message_order["o"] == "STOP_MARKET":
-                auto_cancel_order(symbol=symbol, milliseconds=5000)
                 asyncio.run(
                     bot.send_message(
                         chat_id=Setting.TELEGRAM_CHAT_ID,
