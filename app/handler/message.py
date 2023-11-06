@@ -15,6 +15,7 @@ from .util import (
     check_balance,
     get_symbol_info,
     set_margin_type,
+    auto_cancel_order,
 )
 
 log = get_logger(__name__)
