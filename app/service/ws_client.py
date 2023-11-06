@@ -4,9 +4,9 @@ from time import sleep
 from datetime import datetime
 
 from telegram import Bot
+from handler import create_order
 from binance.error import ClientError
 from telegram.request import HTTPXRequest
-from handler import create_order, auto_cancel_order
 from binance.websocket.binance_socket_manager import BinanceSocketManager
 from binance.websocket.um_futures.websocket_client import UMFuturesWebsocketClient
 
@@ -47,6 +47,7 @@ def message_handler(_: BinanceSocketManager, message: dict) -> None:
                         "side": side,
                         "type": "TRAILING_STOP_MARKET",
                         "activationPrice": str(database[symbol]["target"]),
+                        "quantity": str(database[symbol]["quantity"]),
                         "callbackRate": "0.5",
                         "workingType": "MARK_PRICE",
                         "recvWindow": str(Setting.BINANCE_TIMEOUT),
