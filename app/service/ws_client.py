@@ -79,19 +79,19 @@ def message_handler(_: BinanceSocketManager, message: dict) -> None:
                     asyncio.run(
                         bot.send_message(
                             chat_id=Setting.TELEGRAM_CHAT_ID,
-                            text=f"TP/SL order fail for {symbol}"
+                            text=f"TP/SL order fail for #{symbol}"
                             f"\ndetails: {json.dumps(orders, indent=4)}",
                         )
                     )
 
-            elif message_order["o"] == "TRAILING_STOP_MARKET":
+            elif message_order["ot"] == "TRAILING_STOP_MARKET":
                 asyncio.run(
                     bot.send_message(
                         chat_id=Setting.TELEGRAM_CHAT_ID,
                         text=f"Take profit order filled for #{symbol}",
                     )
                 )
-            elif message_order["o"] == "STOP_MARKET":
+            elif message_order["ot"] == "STOP_MARKET":
                 asyncio.run(
                     bot.send_message(
                         chat_id=Setting.TELEGRAM_CHAT_ID,

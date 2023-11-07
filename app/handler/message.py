@@ -109,11 +109,11 @@ async def process_telegram_message(
 
         if orders and orders[0].get("code", None) is None:
             await update.message.reply_text(
-                f"Order created for {orders[0]['symbol']}, "
+                f"Order created for #{orders[0]['symbol']}, "
                 f"with entry {orders[0]['stopPrice']}"
             )
         else:
             await update.message.reply_text(
-                f"Order fail for {parser.symbol}"
+                f"Order fail for #{parser.symbol}"
                 f"\ndetails: {json.dumps(orders, indent=4)}"
             )
