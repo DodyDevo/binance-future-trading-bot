@@ -124,6 +124,7 @@ def renew_session() -> None:
             ws_client = UMFuturesWebsocketClient(
                 stream_url=Setting.BINANCE_WS_BASE_URL, on_message=message_handler
             )
+            log.debug("Session renewed")
         except Exception as error:
             log.error(f"Found error: {error}")
         sleep(82800)
