@@ -118,14 +118,14 @@ ws_client.user_data(
 
 
 def renew_session() -> None:
+    global ws_client
     while True:
-        listen_key = api_client.new_listen_key()["listenKey"]
-        ws_client.user_data(
-            listen_key=listen_key,
-            id=int(datetime.now().timestamp()),
-        )
-        log.debug(f"New Listen key {listen_key}")
-        log.info("Session created.")
+        try:
+            ws_client = UMFuturesWebsocketClient(
+                stream_url=Setting.BINANCE_WS_BASE_URL, on_message=message_handler
+            )
+        except Exception as error:
+            log.error(f"Found error: {error}")
         sleep(82800)
 
 
