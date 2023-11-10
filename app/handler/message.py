@@ -105,7 +105,7 @@ async def process_opened(parser: MessageParser) -> dict:
             data_symbol["timestamp"]
         )
 
-        if diffrence_time > timedelta(hours=5):
+        if diffrence_time < timedelta(hours=5):
             return {}
 
     symbol_info = await get_symbol_info(parser.symbol)
