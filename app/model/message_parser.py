@@ -102,3 +102,8 @@ class MessageParser:
         self._symbol = message_lines[0][
             message_lines[0].index("#") + 1 : message_lines[0].index(".P")
         ]
+        self._side = (
+            SideType.BUY if message_lines[0].find("𝗟𝗢𝗡𝗚") >= 0 else SideType.SELL
+        )
+
+        self._entry = float(message_lines[1][message_lines[1].index(" at ") + 4 :])
