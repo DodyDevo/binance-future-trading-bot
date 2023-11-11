@@ -1,4 +1,5 @@
 import json
+from uuid import uuid4
 from datetime import datetime, timedelta
 
 from telegram import Update
@@ -50,30 +51,10 @@ async def process_get_ready(parser: MessageParser) -> dict:
 
     await set_margin_type(margin_type="CROSSED", symbol=parser.symbol)
 
-    param = [
-        {
-            "symbol": parser.symbol,
-            "side": parser.side.value,
-            "type": "STOP_MARKET",
-            "stopPrice": str(parser.entry),
-            "quantity": str(quantity),
-            "closePosition": "false",
-            "workingType": "MARK_PRICE",
-            "recvWindow": str(Setting.BINANCE_TIMEOUT),
-        },
-    ]
-
-    orders = create_order(param)
-
-    if orders[0].get("code", None) is not None:
-        return orders
-
-    log.debug(f"Orders created: {orders}")
-
-    auto_cancel_order(parser.symbol)
+    client_order_id = str(uuid4())
 
     order_data = {
-        "order_id": orders[0]["orderId"],
+        "order_id": client_order_id,
         "entry": parser.entry,
         "target": parser.target,
         "stop": parser.stop,
@@ -90,6 +71,29 @@ async def process_get_ready(parser: MessageParser) -> dict:
     with open("database.json", "w") as file:
         data[parser.symbol] = order_data
         json.dump(data, file, indent=4)
+
+    param = [
+        {
+            "symbol": parser.symbol,
+            "side": parser.side.value,
+            "type": "STOP_MARKET",
+            "stopPrice": str(parser.entry),
+            "quantity": str(quantity),
+            "closePosition": "false",
+            "workingType": "MARK_PRICE",
+            "recvWindow": str(Setting.BINANCE_TIMEOUT),
+            "newClientOrderId": client_order_id,
+        },
+    ]
+
+    orders = create_order(param)
+
+    if orders[0].get("code", None) is not None:
+        return orders
+
+    log.debug(f"Orders created: {orders}")
+
+    auto_cancel_order(parser.symbol)
 
     return orders
 
@@ -133,26 +137,10 @@ async def process_opened(parser: MessageParser) -> dict:
 
     await set_margin_type(margin_type="CROSSED", symbol=parser.symbol)
 
-    param = [
-        {
-            "symbol": parser.symbol,
-            "side": parser.side.value,
-            "type": "MARKET",
-            "quantity": str(quantity),
-            "workingType": "MARK_PRICE",
-            "recvWindow": str(Setting.BINANCE_TIMEOUT),
-        },
-    ]
-
-    orders = create_order(param)
-
-    if orders[0].get("code", None) is not None:
-        return orders
-
-    log.debug(f"Orders created: {orders}")
+    client_order_id = str(uuid4())
 
     order_data = {
-        "order_id": orders[0]["orderId"],
+        "order_id": client_order_id,
         "entry": parser.entry,
         "side": parser.side,
         "target": parser.target,
@@ -166,6 +154,25 @@ async def process_opened(parser: MessageParser) -> dict:
     with open("database.json", "w") as file:
         data[parser.symbol] = order_data
         json.dump(data, file, indent=4)
+
+    param = [
+        {
+            "symbol": parser.symbol,
+            "side": parser.side.value,
+            "type": "MARKET",
+            "quantity": str(quantity),
+            "workingType": "MARK_PRICE",
+            "recvWindow": str(Setting.BINANCE_TIMEOUT),
+            "newClientOrderId": client_order_id,
+        },
+    ]
+
+    orders = create_order(param)
+
+    if orders[0].get("code", None) is not None:
+        return orders
+
+    log.debug(f"Orders created: {orders}")
 
     return orders
 
