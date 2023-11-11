@@ -145,7 +145,7 @@ async def process_opened(parser: MessageParser) -> dict:
             "side": "SELL" if parser.side.value == "BUY" else "BUY",
             "type": "TRAILING_STOP_MARKET",
             "quantity": str(quantity),
-            "callbackRate": "0.5",
+            "callbackRate": "0.25",
             "workingType": "MARK_PRICE",
             "recvWindow": str(Setting.BINANCE_TIMEOUT),
         },
