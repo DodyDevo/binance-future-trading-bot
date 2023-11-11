@@ -116,6 +116,8 @@ async def process_opened(parser: MessageParser) -> dict:
         return {}
 
     parser.entry = await truncate(parser.entry, price_precision)
+    parser.target = await truncate(parser.target, price_precision)
+    parser.stop = await truncate(parser.stop, price_precision)
 
     quantity, leverage = await allowable(parser.symbol, parser.entry)
     quantity = await truncate(quantity, symbol_info.get("quantityPrecision", None))
