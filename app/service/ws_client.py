@@ -38,91 +38,62 @@ def message_handler(_: BinanceSocketManager, message: dict) -> None:
 
             symbol = message_order["s"]
             order_id = message_order["i"]
+            order_type = message_order["ot"]
+
+            if order_type == "MARKET":
+                return
 
             if order_id == database[symbol]["order_id"]:
                 side = "SELL" if database[symbol]["side"] == "BUY" else "BUY"
-                order_type = database[symbol]["type"]
+                param = [
+                    {
+                        "symbol": symbol,
+                        "side": side,
+                        "type": "TRAILING_STOP_MARKET",
+                        "activationPrice": str(database[symbol]["target"]),
+                        "quantity": str(database[symbol]["quantity"]),
+                        "callbackRate": "0.5",
+                        "workingType": "MARK_PRICE",
+                        "recvWindow": str(Setting.BINANCE_TIMEOUT),
+                    },
+                    {
+                        "symbol": symbol,
+                        "side": side,
+                        "type": "STOP_MARKET",
+                        "stopPrice": str(database[symbol]["stop"]),
+                        "closePosition": "true",
+                        "workingType": "MARK_PRICE",
+                        "recvWindow": str(Setting.BINANCE_TIMEOUT),
+                    },
+                ]
+                orders = create_order(param)
 
-                if order_type == "STOP_MARKET":
-                    param = [
-                        {
-                            "symbol": symbol,
-                            "side": side,
-                            "type": "TRAILING_STOP_MARKET",
-                            "activationPrice": str(database[symbol]["target"]),
-                            "quantity": str(database[symbol]["quantity"]),
-                            "callbackRate": "0.5",
-                            "workingType": "MARK_PRICE",
-                            "recvWindow": str(Setting.BINANCE_TIMEOUT),
-                        },
-                        {
-                            "symbol": symbol,
-                            "side": side,
-                            "type": "STOP_MARKET",
-                            "stopPrice": str(database[symbol]["stop"]),
-                            "closePosition": "true",
-                            "workingType": "MARK_PRICE",
-                            "recvWindow": str(Setting.BINANCE_TIMEOUT),
-                        },
-                    ]
-                    orders = create_order(param)
+                is_take_profit_success = orders[0].get("code", None)
+                is_stop_loss_success = orders[1].get("code", None)
 
-                    is_take_profit_success = orders[0].get("code", None)
-                    is_stop_loss_success = orders[1].get("code", None)
-
-                    if is_take_profit_success is None and is_stop_loss_success is None:
-                        asyncio.run(
-                            bot.send_message(
-                                chat_id=Setting.TELEGRAM_CHAT_ID,
-                                text=f"TP/SL order created for #{symbol}",
-                            )
+                if is_take_profit_success is None and is_stop_loss_success is None:
+                    asyncio.run(
+                        bot.send_message(
+                            chat_id=Setting.TELEGRAM_CHAT_ID,
+                            text=f"TP/SL order created for #{symbol}",
                         )
-                    else:
-                        asyncio.run(
-                            bot.send_message(
-                                chat_id=Setting.TELEGRAM_CHAT_ID,
-                                text=f"TP/SL order fail for #{symbol}"
-                                f"\ndetails: {json.dumps(orders, indent=4)}",
-                            )
-                        )
+                    )
                 else:
-                    param = [
-                        {
-                            "symbol": symbol,
-                            "side": side,
-                            "type": "TRAILING_STOP_MARKET",
-                            "quantity": str(database[symbol]["quantity"]),
-                            "callbackRate": "0.75",
-                            "workingType": "MARK_PRICE",
-                            "recvWindow": str(Setting.BINANCE_TIMEOUT),
-                        },
-                    ]
-                    orders = create_order(param)
-
-                    if orders[0].get("code", None):
-                        asyncio.run(
-                            bot.send_message(
-                                chat_id=Setting.TELEGRAM_CHAT_ID,
-                                text=f"Trailing order created for #{symbol}",
-                            )
+                    asyncio.run(
+                        bot.send_message(
+                            chat_id=Setting.TELEGRAM_CHAT_ID,
+                            text=f"TP/SL order fail for #{symbol}"
+                            f"\ndetails: {json.dumps(orders, indent=4)}",
                         )
-                    else:
-                        asyncio.run(
-                            bot.send_message(
-                                chat_id=Setting.TELEGRAM_CHAT_ID,
-                                text=f"Trailing created order fail for #{symbol}"
-                                f"\ndetails: {json.dumps(orders, indent=4)}",
-                            )
-                        )
-
-            elif message_order["ot"] == "TRAILING_STOP_MARKET":
+                    )
+            elif order_type == "TRAILING_STOP_MARKET":
                 asyncio.run(
                     bot.send_message(
                         chat_id=Setting.TELEGRAM_CHAT_ID,
                         text=f"Trailing stop order filled for #{symbol}",
                     )
                 )
-            elif message_order["ot"] == "STOP_MARKET":
+            elif order_type == "STOP_MARKET":
                 asyncio.run(
                     bot.send_message(
                         chat_id=Setting.TELEGRAM_CHAT_ID,
