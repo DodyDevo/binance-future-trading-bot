@@ -140,23 +140,11 @@ async def process_opened(parser: MessageParser) -> dict:
             "workingType": "MARK_PRICE",
             "recvWindow": str(Setting.BINANCE_TIMEOUT),
         },
-        {
-            "symbol": parser.symbol,
-            "side": "SELL" if parser.side.value == "BUY" else "BUY",
-            "type": "TRAILING_STOP_MARKET",
-            "quantity": str(quantity),
-            "callbackRate": "0.5",
-            "workingType": "MARK_PRICE",
-            "recvWindow": str(Setting.BINANCE_TIMEOUT),
-        },
     ]
 
     orders = create_order(param)
 
-    if (
-        orders[0].get("code", None) is not None
-        or orders[1].get("code", None) is not None
-    ):
+    if orders[0].get("code", None) is not None:
         return orders
 
     log.debug(f"Orders created: {orders}")
@@ -165,6 +153,8 @@ async def process_opened(parser: MessageParser) -> dict:
         "order_id": orders[0]["orderId"],
         "entry": parser.entry,
         "side": parser.side,
+        "target": parser.target,
+        "stop": parser.stop,
         "quantity": quantity,
         "leverage": leverage,
         "type": "MARKET",
@@ -203,16 +193,9 @@ async def process_telegram_message(
     if parser.message_type == MessageType.OPENED:
         orders = await process_opened(parser)
 
-        if (
-            orders
-            and orders[0].get("code", None) is None
-            and orders[1].get("code", None) is None
-        ):
+        if orders and orders[0].get("code", None) is None:
             await update.message.reply_text(f"Order created for #{parser.symbol}")
-        elif orders and (
-            orders[0].get("code", None) is not None
-            or orders[1].get("code", None) is not None
-        ):
+        elif orders and orders[0].get("code", None) is not None:
             await update.message.reply_text(
                 f"Order fail for #{parser.symbol}"
                 f"\ndetails: {json.dumps(orders, indent=4)}"

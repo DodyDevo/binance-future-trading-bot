@@ -107,3 +107,9 @@ class MessageParser:
         )
 
         self._entry = float(message_lines[1][message_lines[1].index(" at ") + 4 :])
+        self._target = float(
+            message_lines[Setting.TARGET + 1][
+                message_lines[Setting.TARGET + 1].index(":") + 2 :
+            ]
+        )
+        self._stop = float(message_lines[8][message_lines[8].index(":") + 2 :])

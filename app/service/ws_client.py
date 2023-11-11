@@ -40,11 +40,9 @@ def message_handler(_: BinanceSocketManager, message: dict) -> None:
             order_id = message_order["i"]
             order_type = message_order["ot"]
 
-            if order_type == "MARKET":
-                return
-
-            if order_id == database[symbol]["order_id"]:
+            if order_id == database[symbol]["order_id"] or order_type == "MARKET":
                 side = "SELL" if database[symbol]["side"] == "BUY" else "BUY"
+
                 param = [
                     {
                         "symbol": symbol,
