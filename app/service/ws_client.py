@@ -5,8 +5,8 @@ from datetime import datetime
 
 from telegram import Bot
 from handler import create_order
-from binance.error import ClientError
 from telegram.request import HTTPXRequest
+from binance.error import ClientError, ParameterRequiredError
 from binance.websocket.binance_socket_manager import BinanceSocketManager
 from binance.websocket.um_futures.websocket_client import UMFuturesWebsocketClient
 
@@ -126,7 +126,7 @@ def renew_session() -> None:
                 id=int(datetime.now().timestamp()),
             )
             log.debug(f"Session renewed for {listen_key}")
-            sleep(82800)
+            sleep(43200)
         except Exception as error:
             log.error(f"Found error: {error}")
 
@@ -144,5 +144,7 @@ def renew_key() -> None:
                 f"\nError code: {error.error_code}"
                 f"\nError message: {error.error_message}"
             )
+        except ParameterRequiredError:
+            pass
         except Exception as error:
             log.error(f"Found error: {error}")
