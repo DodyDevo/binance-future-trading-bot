@@ -76,10 +76,10 @@ async def process_get_ready(parser: MessageParser) -> dict:
         {
             "symbol": parser.symbol,
             "side": parser.side.value,
-            "type": "STOP_MARKET",
+            "type": "STOP",
             "stopPrice": str(parser.entry),
             "quantity": str(quantity),
-            "closePosition": "false",
+            "price": str(parser.entry),
             "workingType": "MARK_PRICE",
             "recvWindow": str(Setting.BINANCE_TIMEOUT),
             "newClientOrderId": client_order_id,
@@ -210,4 +210,4 @@ async def process_telegram_message(
                 f"\ndetails: {json.dumps(orders, indent=4)}"
             )
         else:
-            await update.message.reply_text(f"Order ignore for #{parser.symbol}")
+            log.info(f"Order ignored for #{parser.symbol}")
