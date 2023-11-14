@@ -4,8 +4,8 @@ from time import sleep
 from datetime import datetime
 
 from telegram import Bot
-from handler import create_order
 from telegram.request import HTTPXRequest
+from handler import create_order, auto_cancel_order
 from binance.error import ClientError, ParameterRequiredError
 from binance.websocket.binance_socket_manager import BinanceSocketManager
 from binance.websocket.um_futures.websocket_client import UMFuturesWebsocketClient
@@ -78,6 +78,7 @@ def message_handler(_: BinanceSocketManager, message: dict) -> None:
                                 text=f"TP/SL order created for #{symbol}",
                             )
                         )
+                        auto_cancel_order(symbol, 0)
                     else:
                         asyncio.run(
                             bot.send_message(
@@ -93,6 +94,7 @@ def message_handler(_: BinanceSocketManager, message: dict) -> None:
                             text=f"Trailing stop order filled for #{symbol}",
                         )
                     )
+                    auto_cancel_order(symbol, 2500)
                 elif order_type == "STOP_MARKET":
                     asyncio.run(
                         bot.send_message(
@@ -100,6 +102,7 @@ def message_handler(_: BinanceSocketManager, message: dict) -> None:
                             text=f"Stop loss order filled for #{symbol}",
                         )
                     )
+                    auto_cancel_order(symbol, 2500)
                 else:
                     log.debug(f"Unrecognize order message: {message_order}")
             else:
