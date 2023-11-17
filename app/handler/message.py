@@ -61,7 +61,6 @@ async def process_get_ready(parser: MessageParser) -> dict:
         "side": parser.side,
         "quantity": quantity,
         "leverage": leverage,
-        "type": "STOP_MARKET",
         "timestamp": int(datetime.now().timestamp()),
     }
 
@@ -147,7 +146,6 @@ async def process_opened(parser: MessageParser) -> dict:
         "stop": parser.stop,
         "quantity": quantity,
         "leverage": leverage,
-        "type": "MARKET",
         "timestamp": int(datetime.now().timestamp()),
     }
 
@@ -159,8 +157,10 @@ async def process_opened(parser: MessageParser) -> dict:
         {
             "symbol": parser.symbol,
             "side": parser.side.value,
-            "type": "MARKET",
+            "type": "STOP",
+            "stopPrice": str(parser.entry),
             "quantity": str(quantity),
+            "price": str(parser.entry),
             "workingType": "MARK_PRICE",
             "recvWindow": str(Setting.BINANCE_TIMEOUT),
             "newClientOrderId": client_order_id,

@@ -52,7 +52,7 @@ def message_handler(_: BinanceSocketManager, message: dict) -> None:
                             "type": "TRAILING_STOP_MARKET",
                             "activationPrice": str(database[symbol]["target"]),
                             "quantity": str(database[symbol]["quantity"]),
-                            "callbackRate": "0.5",
+                            "callbackRate": "0.4",
                             "workingType": "MARK_PRICE",
                             "recvWindow": str(Setting.BINANCE_TIMEOUT),
                         },
