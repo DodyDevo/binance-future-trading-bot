@@ -44,6 +44,8 @@ def message_handler(_: BinanceSocketManager, message: dict) -> None:
 
                 if order_id == database[symbol]["order_id"]:
                     side = "SELL" if database[symbol]["side"] == "BUY" else "BUY"
+                    quantity = str(database[symbol]["quantity"])
+                    second_target = str(database[symbol]["second_target"])
 
                     param = [
                         {
@@ -51,8 +53,18 @@ def message_handler(_: BinanceSocketManager, message: dict) -> None:
                             "side": side,
                             "type": "TRAILING_STOP_MARKET",
                             "activationPrice": str(database[symbol]["target"]),
-                            "quantity": str(database[symbol]["quantity"]),
+                            "quantity": quantity,
                             "callbackRate": "0.4",
+                            "workingType": "MARK_PRICE",
+                            "recvWindow": str(Setting.BINANCE_TIMEOUT),
+                        },
+                        {
+                            "symbol": symbol,
+                            "side": side,
+                            "type": "TAKE_PROFIT",
+                            "stopPrice": second_target,
+                            "quantity": quantity,
+                            "price": second_target,
                             "workingType": "MARK_PRICE",
                             "recvWindow": str(Setting.BINANCE_TIMEOUT),
                         },
@@ -68,10 +80,15 @@ def message_handler(_: BinanceSocketManager, message: dict) -> None:
                     ]
                     orders = create_order(param)
 
-                    is_take_profit_success = orders[0].get("code", None)
-                    is_stop_loss_success = orders[1].get("code", None)
+                    is_stop_trailling_success = orders[0].get("code", None)
+                    is_take_profit_success = orders[1].get("code", None)
+                    is_stop_loss_success = orders[2].get("code", None)
 
-                    if is_take_profit_success is None and is_stop_loss_success is None:
+                    if (
+                        is_stop_trailling_success is None
+                        and is_take_profit_success is None
+                        and is_stop_loss_success is None
+                    ):
                         asyncio.run(
                             bot.send_message(
                                 chat_id=Setting.TELEGRAM_CHAT_ID,
@@ -94,7 +111,15 @@ def message_handler(_: BinanceSocketManager, message: dict) -> None:
                             text=f"Trailing stop order filled for #{symbol}",
                         )
                     )
-                    auto_cancel_order(symbol, 2500)
+                    auto_cancel_order(symbol, 1000)
+                elif order_type == "TAKE_PROFIT":
+                    asyncio.run(
+                        bot.send_message(
+                            chat_id=Setting.TELEGRAM_CHAT_ID,
+                            text=f"Take profit order filled for #{symbol}",
+                        )
+                    )
+                    auto_cancel_order(symbol, 500)
                 elif order_type == "STOP_MARKET":
                     asyncio.run(
                         bot.send_message(
@@ -102,11 +127,7 @@ def message_handler(_: BinanceSocketManager, message: dict) -> None:
                             text=f"Stop loss order filled for #{symbol}",
                         )
                     )
-                    auto_cancel_order(symbol, 2500)
-                else:
-                    log.debug(f"Unrecognize order message: {message_order}")
-            else:
-                log.debug(f"Not filled order message: {message_order}")
+                    auto_cancel_order(symbol, 1000)
         else:
             log.debug(f"Message received: {message}")
     except Exception as error:

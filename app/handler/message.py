@@ -33,6 +33,7 @@ async def process_get_ready(parser: MessageParser) -> dict:
 
     parser.entry = await truncate(parser.entry, price_precision)
     parser.target = await truncate(parser.target, price_precision)
+    parser.second_target = await truncate(parser.second_target, price_precision)
     parser.stop = await truncate(parser.stop, price_precision)
 
     quantity, leverage = await allowable(parser.symbol, parser.entry)
@@ -57,6 +58,7 @@ async def process_get_ready(parser: MessageParser) -> dict:
         "order_id": client_order_id,
         "entry": parser.entry,
         "target": parser.target,
+        "second_target": parser.second_target,
         "stop": parser.stop,
         "side": parser.side,
         "quantity": quantity,
@@ -120,6 +122,7 @@ async def process_opened(parser: MessageParser) -> dict:
 
     parser.entry = await truncate(parser.entry, price_precision)
     parser.target = await truncate(parser.target, price_precision)
+    parser.second_target = await truncate(parser.second_target, price_precision)
     parser.stop = await truncate(parser.stop, price_precision)
 
     quantity, leverage = await allowable(parser.symbol, parser.entry)
@@ -130,7 +133,7 @@ async def process_opened(parser: MessageParser) -> dict:
     if balance < Setting.TRADE_AMOUNT:
         log.error(
             f"Stop trading balance is less than {Setting.TRADE_AMOUNT}, "
-            "current balance {balance}"
+            f"current balance {balance}"
         )
         return {}
 
@@ -143,6 +146,7 @@ async def process_opened(parser: MessageParser) -> dict:
         "entry": parser.entry,
         "side": parser.side,
         "target": parser.target,
+        "second_target": parser.second_target,
         "stop": parser.stop,
         "quantity": quantity,
         "leverage": leverage,
