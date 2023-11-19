@@ -161,10 +161,8 @@ async def process_opened(parser: MessageParser) -> dict:
         {
             "symbol": parser.symbol,
             "side": parser.side.value,
-            "type": "STOP",
-            "stopPrice": str(parser.entry),
+            "type": "MARKET",
             "quantity": str(quantity),
-            "price": str(parser.entry),
             "workingType": "MARK_PRICE",
             "recvWindow": str(Setting.BINANCE_TIMEOUT),
             "newClientOrderId": client_order_id,
