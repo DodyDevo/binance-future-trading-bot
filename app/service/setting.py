@@ -16,6 +16,7 @@ class Setting(BaseSettings):
     TARGET: int = Field(1, ge=1, le=6)
     TRADE_AMOUNT: float = Field(2, gt=0)
     LEVERAGE: int = Field(10, ge=1, le=125)
+    IGNORE_OPEN_ORDER: bool = True
 
     class Config:
         env_file = ".env"

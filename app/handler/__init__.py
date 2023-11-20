@@ -1,5 +1,5 @@
 from .message import process_telegram_message
-from .command import set_trade, set_target, set_leverage
+from .command import set_trade, set_target, set_leverage, set_ignore_open_order
 from .util import (
     truncate,
     allowable,
@@ -27,4 +27,5 @@ __all__ = [
     "set_trade",
     "set_target",
     "cancel_orders",
+    "set_ignore_open_order",
 ]

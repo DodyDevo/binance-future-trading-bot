@@ -31,3 +31,14 @@ async def set_target(update: Update, _: ContextTypes) -> None:
         await update.message.reply_text(f"TARGET set to {Setting.TARGET}")
     except ValueError:
         await update.message.reply_text("Invalid value for TARGET")
+
+
+async def set_ignore_open_order(update: Update, _: ContextTypes) -> None:
+    _, variable = update.message.text.split(maxsplit=1)
+    try:
+        Setting.IGNORE_OPEN_ORDER = bool(variable)
+        await update.message.reply_text(
+            f"IGNORE OPEN ORDER set to {Setting.IGNORE_OPEN_ORDER}"
+        )
+    except ValueError:
+        await update.message.reply_text("Invalid value for IGNORE OPEN ORDER")

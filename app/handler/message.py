@@ -100,6 +100,9 @@ async def process_get_ready(parser: MessageParser) -> dict:
 
 
 async def process_opened(parser: MessageParser) -> dict:
+    if Setting.IGNORE_OPEN_ORDER:
+        return {}
+
     with open("database.json", "r") as file:
         data = json.load(file)
 
@@ -112,6 +115,15 @@ async def process_opened(parser: MessageParser) -> dict:
 
         if diffrence_time < timedelta(hours=5):
             return {}
+
+    balance = await check_balance()
+
+    if balance < Setting.TRADE_AMOUNT:
+        log.error(
+            f"Stop trading balance is less than {Setting.TRADE_AMOUNT}, "
+            f"current balance {balance}"
+        )
+        return {}
 
     symbol_info = await get_symbol_info(parser.symbol)
     price_precision = symbol_info.get("pricePrecision", None)
@@ -127,15 +139,6 @@ async def process_opened(parser: MessageParser) -> dict:
 
     quantity, leverage = await allowable(parser.symbol, parser.entry)
     quantity = await truncate(quantity, symbol_info.get("quantityPrecision", None))
-
-    balance = await check_balance()
-
-    if balance < Setting.TRADE_AMOUNT:
-        log.error(
-            f"Stop trading balance is less than {Setting.TRADE_AMOUNT}, "
-            f"current balance {balance}"
-        )
-        return {}
 
     await set_margin_type(margin_type="CROSSED", symbol=parser.symbol)
 
