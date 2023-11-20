@@ -27,7 +27,7 @@ async def post_init(application: Application) -> None:
             BotCommand(command="leverage", description="Set new leverage"),
             BotCommand(command="trade", description="Set new trade amount"),
             BotCommand(command="target", description="Set new targer"),
-            BotCommand(command="ignore-open", description="Set ignore set order"),
+            BotCommand(command="ignoreopen", description="Set ignore set order"),
         ]
     )
 
@@ -72,7 +72,7 @@ if __name__ == "__main__":
 
     app.add_handler(
         CommandHandler(
-            command="ignore-open",
+            command="ignoreopen",
             callback=set_ignore_open_order,
             filters=filters.User(user_id=Setting.TELEGRAM_OWNER_ID),
         )
