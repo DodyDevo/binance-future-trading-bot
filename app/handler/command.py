@@ -36,7 +36,7 @@ async def set_target(update: Update, _: ContextTypes) -> None:
 async def set_ignore_open_order(update: Update, _: ContextTypes) -> None:
     _, variable = update.message.text.split(maxsplit=1)
     try:
-        Setting.IGNORE_OPEN_ORDER = bool(variable)
+        Setting.IGNORE_OPEN_ORDER = bool(int(variable))
         await update.message.reply_text(
             f"IGNORE OPEN ORDER set to {Setting.IGNORE_OPEN_ORDER}"
         )
