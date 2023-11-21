@@ -38,6 +38,9 @@ async def process_get_ready(parser: MessageParser) -> dict:
         return {}
 
     parser.entry = await truncate(parser.entry, price_precision)
+    temp = Decimal(str(parser.entry))
+    parser.entry = float(temp - temp % Decimal(str(tick_size)))
+
     parser.target = await truncate(parser.target, price_precision)
 
     parser.second_target = await truncate(parser.second_target, price_precision)
