@@ -1,5 +1,6 @@
 import json
 from uuid import uuid4
+from decimal import Decimal
 from datetime import datetime, timedelta
 
 from telegram import Update
@@ -27,13 +28,22 @@ async def process_get_ready(parser: MessageParser) -> dict:
 
     price_precision = symbol_info.get("pricePrecision", None)
 
+    tick_size = 0.0
+    for symbol_filter in symbol_info["filters"]:
+        if symbol_filter["filterType"] == "PRICE_FILTER":
+            tick_size = float(symbol_filter["tickSize"])
+
     if not price_precision:
         log.error(f"Price precision not found for symbol: {parser.symbol}")
         return {}
 
     parser.entry = await truncate(parser.entry, price_precision)
     parser.target = await truncate(parser.target, price_precision)
+
     parser.second_target = await truncate(parser.second_target, price_precision)
+    temp = Decimal(str(parser.second_target))
+    parser.second_target = float(temp - temp % Decimal(str(tick_size)))
+
     parser.stop = await truncate(parser.stop, price_precision)
 
     quantity, leverage = await allowable(parser.symbol, parser.entry)
@@ -126,6 +136,12 @@ async def process_opened(parser: MessageParser) -> dict:
         return {}
 
     symbol_info = await get_symbol_info(parser.symbol)
+
+    tick_size = 0.0
+    for symbol_filter in symbol_info["filters"]:
+        if symbol_filter["filterType"] == "PRICE_FILTER":
+            tick_size = float(symbol_filter["tickSize"])
+
     price_precision = symbol_info.get("pricePrecision", None)
 
     if not price_precision:
@@ -134,7 +150,11 @@ async def process_opened(parser: MessageParser) -> dict:
 
     parser.entry = await truncate(parser.entry, price_precision)
     parser.target = await truncate(parser.target, price_precision)
+
     parser.second_target = await truncate(parser.second_target, price_precision)
+    temp = Decimal(str(parser.second_target))
+    parser.second_target = float(temp - temp % Decimal(str(tick_size)))
+
     parser.stop = await truncate(parser.stop, price_precision)
 
     quantity, leverage = await allowable(parser.symbol, parser.entry)
