@@ -84,6 +84,8 @@ def message_handler(_: BinanceSocketManager, message: dict) -> None:
                     is_take_profit_success = orders[1].get("code", None)
                     is_stop_loss_success = orders[2].get("code", None)
 
+                    auto_cancel_order(symbol, 0)
+
                     if (
                         is_stop_trailling_success is None
                         and is_take_profit_success is None
@@ -95,7 +97,6 @@ def message_handler(_: BinanceSocketManager, message: dict) -> None:
                                 text=f"TP/SL order created for #{symbol}",
                             )
                         )
-                        auto_cancel_order(symbol, 0)
                     else:
                         asyncio.run(
                             bot.send_message(
@@ -111,7 +112,7 @@ def message_handler(_: BinanceSocketManager, message: dict) -> None:
                             text=f"Trailing stop order filled for #{symbol}",
                         )
                     )
-                    auto_cancel_order(symbol, 1000)
+                    auto_cancel_order(symbol, 500)
                 elif order_type == "TAKE_PROFIT":
                     asyncio.run(
                         bot.send_message(
@@ -127,7 +128,7 @@ def message_handler(_: BinanceSocketManager, message: dict) -> None:
                             text=f"Stop loss order filled for #{symbol}",
                         )
                     )
-                    auto_cancel_order(symbol, 1000)
+                    auto_cancel_order(symbol, 500)
         else:
             log.debug(f"Message received: {message}")
     except Exception as error:

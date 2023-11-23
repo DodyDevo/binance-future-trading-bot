@@ -152,6 +152,9 @@ async def process_opened(parser: MessageParser) -> dict:
         return {}
 
     parser.entry = await truncate(parser.entry, price_precision)
+    temp = Decimal(str(parser.entry))
+    parser.entry = float(temp - temp % Decimal(str(tick_size)))
+
     parser.target = await truncate(parser.target, price_precision)
 
     parser.second_target = await truncate(parser.second_target, price_precision)
@@ -183,12 +186,26 @@ async def process_opened(parser: MessageParser) -> dict:
         data[parser.symbol] = order_data
         json.dump(data, file, indent=4)
 
+    # param = [
+    #     {
+    #         "symbol": parser.symbol,
+    #         "side": parser.side.value,
+    #         "type": "MARKET",
+    #         "quantity": str(quantity),
+    #         "workingType": "MARK_PRICE",
+    #         "recvWindow": str(Setting.BINANCE_TIMEOUT),
+    #         "newClientOrderId": client_order_id,
+    #     },
+    # ]
+
     param = [
         {
             "symbol": parser.symbol,
             "side": parser.side.value,
-            "type": "MARKET",
+            "type": "STOP",
+            "stopPrice": str(parser.entry),
             "quantity": str(quantity),
+            "price": str(parser.entry),
             "workingType": "MARK_PRICE",
             "recvWindow": str(Setting.BINANCE_TIMEOUT),
             "newClientOrderId": client_order_id,
@@ -199,6 +216,8 @@ async def process_opened(parser: MessageParser) -> dict:
 
     if orders[0].get("code", None) is not None:
         return orders
+
+    auto_cancel_order(parser.symbol, 120000)
 
     log.debug(f"Orders created: {orders}")
 
