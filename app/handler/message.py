@@ -202,9 +202,10 @@ async def process_opened(parser: MessageParser) -> dict:
         {
             "symbol": parser.symbol,
             "side": parser.side.value,
-            "type": "STOP_MARKET",
+            "type": "STOP",
             "stopPrice": str(parser.entry),
             "quantity": str(quantity),
+            "price": str(parser.entry),
             "workingType": "MARK_PRICE",
             "recvWindow": str(Setting.BINANCE_TIMEOUT),
             "newClientOrderId": client_order_id,
@@ -213,10 +214,25 @@ async def process_opened(parser: MessageParser) -> dict:
 
     orders = create_order(param)
 
-    if orders[0].get("code", None) is not None:
-        return orders
-
     auto_cancel_order(parser.symbol, 120000)
+
+    if orders[0].get("code", None) is not None:
+        if orders[0]["code"] == -2021:
+            auto_cancel_order(parser.symbol, 0)
+            param = [
+                {
+                    "symbol": parser.symbol,
+                    "side": parser.side.value,
+                    "type": "MARKET",
+                    "quantity": str(quantity),
+                    "workingType": "MARK_PRICE",
+                    "recvWindow": str(Setting.BINANCE_TIMEOUT),
+                    "newClientOrderId": client_order_id,
+                },
+            ]
+            orders = create_order(param)
+        else:
+            return orders
 
     log.debug(f"Orders created: {orders}")
 
